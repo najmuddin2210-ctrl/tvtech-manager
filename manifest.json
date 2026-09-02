@@ -1,18 +1,1 @@
-{
-  "name": "TVTECH Manager",
-  "short_name": "TVTECH",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#fff7ed",
-  "theme_color": "#f97316",
-  "description": "Pengurusan pelanggan SEENTV",
-  "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
-}
+{"name":"SeenTV Manager","short_name":"SeenTV","start_url":"./","display":"standalone","background_color":"#fffaf5","theme_color":"#f97316","description":"Pengurusan pelanggan SeenTV","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
