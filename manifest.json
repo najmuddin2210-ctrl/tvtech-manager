@@ -1,1 +1,18 @@
-{"name":"SeenTV Manager","short_name":"SeenTV","start_url":"./","display":"standalone","background_color":"#fffaf5","theme_color":"#f97316","description":"Pengurusan pelanggan SeenTV","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "name": "SeenTV",
+  "short_name": "SeenTV",
+  "start_url": "./?app=seentv-v2",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#f97316",
+  "description": "Pengurusan pelanggan SeenTV",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
