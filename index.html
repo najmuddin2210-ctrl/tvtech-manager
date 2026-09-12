@@ -66,6 +66,38 @@ function renew(){let r=db.find(x=>x.id===renewId),id=$("rpack").value,s=$("rdate
 function wa(id){let r=db.find(x=>x.id===id);if(!r||!r.phone)return toast("Nombor WhatsApp belum diisi.");let d=diff(r.end);let msg=d<0?`Salam ${r.name}, akaun SEENTV anda telah tamat. Jika mahu renew, boleh hubungi kami.`:`Salam ${r.name}, akaun SEENTV anda akan tamat pada ${fmt(r.end)}. Jika mahu renew, boleh hubungi kami.`;location.href="https://wa.me/"+r.phone.replace(/\\D/g,"")+"?text="+encodeURIComponent(msg)}
 function receipt(id){receiptId=id;let r=db.find(x=>x.id===id),t=(r.transactions||[]).at(-1);$("receiptContent").innerHTML=`<div style="border:1px solid #ddd;padding:14px;border-radius:10px"><b>SeenTV</b><hr><p>Pelanggan: <b>${esc(r.name)}</b></p><p>Pakej: ${esc(t?.pack||r.packName)}</p><p>Tarikh: ${fmt(t?.date||today())}</p><p>Harga jualan: <b>${rm(t?.jual)}</b></p><p>Modal: ${rm(t?.modal)}</p><p>Untung: <b>${rm(t?.profit)}</b></p><p>Tempoh: ${r.packName}</p><p>Tamat: <b>${fmt(r.end)}</b></p></div>`;$("receipt").style.display="block"}
 function printReceipt(){let html=$("receiptContent").innerHTML;let w=open("","_blank");w.document.write(`<html><head><title>Resit SeenTV</title><style>body{font:14px Arial;padding:30px}hr{border:0;border-top:1px solid #ddd}</style></head><body>${html}</body></html>`);w.document.close();w.print()}
+
+function tomorrowISO(){
+ const d=new Date(); d.setDate(d.getDate()+1);
+ d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+ return d.toISOString().slice(0,10);
+}
+function h1Customers(){return db.customers.filter(r=>r.end===tomorrowISO() && r.phone);}
+function h1Message(r){return `Assalamualaikum ${r.name}, langganan SeenTV anda akan tamat ESOK (${dateStr(r.end)}). Jika ingin sambung langganan, boleh hubungi kami. Terima kasih.`;}
+function sendH1(id){
+ const r=db.customers.find(x=>x.id===id); if(!r||!r.phone){toast('Nombor WhatsApp belum diisi');return}
+ localStorage.setItem('h1sent_'+r.id+'_'+r.end,new Date().toISOString());
+ window.open('https://wa.me/'+normalizePhone(r.phone)+'?text='+encodeURIComponent(h1Message(r)),'_blank');
+ toast('WhatsApp dibuka — tekan Hantar'); renderH1();
+}
+function renderH1(){
+ const box=document.getElementById('h1List'),card=document.getElementById('h1Reminder'); if(!box||!card)return;
+ const arr=h1Customers(); card.style.display=arr.length?'block':'none';
+ box.innerHTML=arr.map(r=>{const sent=!!localStorage.getItem('h1sent_'+r.id+'_'+r.end);
+ return `<div class="customer"><div class="customer-top"><div><div class="name">${esc(r.name)}</div><div class="sub">📱 ${esc(r.phone||'')}</div></div><span class="badge warn">TAMAT ESOK</span></div><div class="sub" style="margin:9px 0">${esc(h1Message(r))}</div><button class="btn ${sent?'ghost':'primary'}" style="width:100%" onclick="sendH1('${r.id}')">${sent?'💬 Hantar Lagi':'💬 WhatsApp H-1'}</button></div>`}).join('');
+}
+function checkH1(manual=false){
+ renderH1(); const arr=h1Customers();
+ if(manual) toast(arr.length?`${arr.length} pelanggan tamat esok`:'Tiada pelanggan tamat esok');
+ if(arr.length && 'Notification' in window && Notification.permission==='granted'){
+   try{new Notification('SeenTV — Peringatan H-1',{body:`${arr.length} pelanggan akan tamat esok.`})}catch(e){}
+ }
+}
+async function requestNotify(){
+ if(!('Notification' in window)){toast('Telefon/browser tidak sokong notifikasi');return}
+ const p=await Notification.requestPermission(); toast(p==='granted'?'Notifikasi dibenarkan':'Notifikasi tidak dibenarkan');
+}
+
 function render(){let q=$("q").value.toLowerCase(),arr=db.filter(r=>(r.name+" "+(r.phone||"")+" "+r.pack).toLowerCase().includes(q));let modal=0,profit=0,due=0;db.forEach(r=>{modal+=r.totalModal??r.modal??0;profit+=r.totalProfit??r.untung??0;if(diff(r.end)<=7)due++});$("n").textContent=db.length;$("due").textContent=due;$("modal").textContent=rm(modal);$("profit").textContent=rm(profit);$("count").textContent=arr.length+" Rekod";
 let al=db.filter(r=>diff(r.end)<=7).sort((a,b)=>diff(a.end)-diff(b.end));$("alert").style.display=al.length?"block":"none";$("alertList").innerHTML=al.map(r=>{let d=diff(r.end);return `<div><b>${esc(r.name)}</b> — ${d<0?"Tamat "+Math.abs(d)+" hari lepas":d===0?"Tamat hari ini":"Tamat dalam "+d+" hari"} (${r.packName})</div>`}).join("");
 let g={};arr.sort((a,b)=>a.end.localeCompare(b.end)).forEach(r=>(g[r.pack]??=[]).push(r));$("list").innerHTML=Object.keys(P).filter(k=>g[k]).map(k=>`<div class="group"><div class="gt">${P[k].n} (${g[k].length})</div>${g[k].map(card).join("")}</div>`).join("")||`<div class="empty">Tiada pelanggan dijumpai.</div>`}
